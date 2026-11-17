@@ -34,28 +34,20 @@ class TextHaloExpression extends Expression<List<Shadow>> {
     }
     double factor = max(1.0, context.zoomScaleFactor);
     double offset = width / factor;
-    double radius = width / factor;
+    // A halo is a ring around the glyph. Four blurred shadows (the previous
+    // approach) detach from the glyph at high device pixel ratios and read as a
+    // duplicated, shadowed label. Zero-blur copies keep the ring tight.
+    const steps = 12;
     return [
-      Shadow(
-        offset: Offset(-offset, -offset),
-        blurRadius: radius,
-        color: color,
-      ),
-      Shadow(
-        offset: Offset(offset, offset),
-        blurRadius: radius,
-        color: color,
-      ),
-      Shadow(
-        offset: Offset(offset, -offset),
-        blurRadius: radius,
-        color: color,
-      ),
-      Shadow(
-        offset: Offset(-offset, offset),
-        blurRadius: radius,
-        color: color,
-      ),
+      for (var i = 0; i < steps; i++)
+        Shadow(
+          offset: Offset(
+            offset * cos(2 * pi * i / steps),
+            offset * sin(2 * pi * i / steps),
+          ),
+          blurRadius: 0,
+          color: color,
+        ),
     ];
   }
 
